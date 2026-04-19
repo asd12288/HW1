@@ -4,7 +4,8 @@
 
 
 int main( ) {
-
+    int abc = 12;
+    print ("%d", abc);
 
     return 0;
 }
