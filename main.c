@@ -6,5 +6,7 @@
 int main( ) {
     int abc = 12;
 
+    int f = 9;
+
     return 0;
 }
