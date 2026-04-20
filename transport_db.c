@@ -68,7 +68,7 @@ void handle_file(int argc, char *argv[]) {
            }
          }
      }
-
+     return(0);
 }
 
 
