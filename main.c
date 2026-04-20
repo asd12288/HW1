@@ -3,11 +3,11 @@
 
 
 
-int main( ) {
-    int abc = 12;
+int main() {
+    
 
-    int f = 9;
-    int a = 9;
+
+
 
     return 0;
 }
