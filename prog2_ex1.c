@@ -3,6 +3,7 @@
 
 
 const char *error_strings[] = {
+    "Success",
     "Invalid Arguments",
     "Cannot open file",
     "Out of memory",

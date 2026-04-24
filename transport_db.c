@@ -15,7 +15,7 @@ void report_lines(char *type);
 void report_stations(char *type);
 void report_direction(char *from_station_name, char *to_station_name);
 void proccess_line(char buffer[], FILE *output);
-
+transport_type parse_type(const char *type);
 
 
 typedef struct line_t {
@@ -29,9 +29,13 @@ typedef struct line_t {
 } Line;
 
 
-Line lines[MAX_LINES];
+Line *lines[MAX_LINES];
 
 int main(int argc, char* argv[]) {
+
+  for(int i = 0; i < MAX_LINES; i++) {
+    lines[i] = NULL;
+  }
 
     handle_file(argc, argv);
 
@@ -44,7 +48,7 @@ int main(int argc, char* argv[]) {
 void handle_file(int argc, char *argv[]) {
 
     if(!(argc == 1 || argc == 3 || argc == 5)) {
-         prog2_report_error_message(TRANSPORT_CANNOT_OPEN_FILE);
+         prog2_report_error_message(TRANSPORT_INVALID_ARGUMENTS);
     }
    
     FILE *input = stdin;
@@ -56,7 +60,7 @@ void handle_file(int argc, char *argv[]) {
            input = fopen(argv[2], "r");
 
            if(!input) {
-                prog2_report_error_message(TRANSPORT_INVALID_ARGUMENTS);
+                prog2_report_error_message(TRANSPORT_CANNOT_OPEN_FILE);
                 return;
            }
            
@@ -64,13 +68,13 @@ void handle_file(int argc, char *argv[]) {
          } else if (strcmp(argv[1], "-o") == 0) {
              output = fopen(argv[2], "w");
              if(!output) {
-                prog2_report_error_message(TRANSPORT_INVALID_ARGUMENTS);
+                prog2_report_error_message(TRANSPORT_CANNOT_OPEN_FILE);
                 return;
            }
 
          }
          else {
-            prog2_report_error_message(TRANSPORT_CANNOT_OPEN_FILE);
+            prog2_report_error_message(TRANSPORT_INVALID_ARGUMENTS);
             return;
          }
      }
@@ -84,26 +88,26 @@ void handle_file(int argc, char *argv[]) {
            
 
            if((!input) || (!output)) {
-                prog2_report_error_message(1);
+                prog2_report_error_message(TRANSPORT_CANNOT_OPEN_FILE);
            }
 
          } else if(strcmp(argv[3], "-i" ) == 0 && strcmp(argv[1], "-o") == 0) {
             input = fopen(argv[4], "r");
 
             if(!input) {
-                prog2_report_error_message(TRANSPORT_INVALID_ARGUMENTS);
+                prog2_report_error_message(TRANSPORT_CANNOT_OPEN_FILE);
                 return;
             }
 
             output = fopen(argv[2], "w");
              // TODO: refactor
             if(!output) {
-                prog2_report_error_message(TRANSPORT_INVALID_ARGUMENTS);
+                prog2_report_error_message(TRANSPORT_CANNOT_OPEN_FILE);
                 fclose(input);
                 return;
            }
          } else {
-            prog2_report_error_message(0);
+            prog2_report_error_message(TRANSPORT_INVALID_ARGUMENTS);
          }
      } 
 
@@ -189,10 +193,54 @@ void proccess_line(char buffer[], FILE *output) {
 
 void add_line(char type[], line_id id, int number_of_station, double price) {
 
-    
-    if(price <= 0) {
-        prog2_report_error_message(TRANSPORT_INVALID_PRICE);
+
+    if(id >= MAX_LINES || id < 0) {
+      prog2_report_error_message(TRANSPORT_INVALID_LINE_NUMBER);
+      return;
     }
+
+    if(lines[id] != NULL) {
+        prog2_report_error_message(TRANSPORT_ALREADY_EXISTS);
+        return;
+    }
+
+    transport_type type_line = parse_type(type);
+
+    if(!(type_line)) {
+      prog2_report_error_message(TRANSPORT_INVALID_LINE_TYPE);
+      return;
+    }
+ 
+
+    if(price <= 0) {
+      prog2_report_error_message(TRANSPORT_INVALID_PRICE);
+      return;
+    }
+
+
+    lines[id] = malloc(sizeof(Line));
+    if(!lines[id]) {
+        prog2_report_error_message(TRANSPORT_OUT_OF_MEMORY);
+        return;
+    }
+   
+    
+    lines[id]->exists = 1;
+    lines[id]->id_of_line = id;
+    lines[id]->type_of_transport = type_line;
+    lines[id]->max_num_of_stations = number_of_station;
+    lines[id]->current_num_of_stations = 0;
+    lines[id]->price = price;
+
+    lines[id]->stations = malloc(number_of_station * sizeof(char *));
+    if(!lines[id]->stations) {
+      free(lines[id]);
+      lines[id] = NULL;
+      prog2_report_error_message(TRANSPORT_OUT_OF_MEMORY);
+      return;
+    }
+
+
 
     // all the logic add here ...
 
@@ -210,10 +258,11 @@ void add_station_to_line(line_id id, char *station_name) {
     // all the add station to a line here
 }
 
-// void report_lines()
 
 
-// function to check 
-// fgets, fputs
-// strtok
-// atoi
+transport_type parse_type(const char *type) {
+  if(strcmp(type, "BUS") == 0) return BUS;
+  if(strcmp(type, "METRO") == 0) return METRO;
+  if(strcmp(type, "TRAIN") == 0) return TRAIN;
+  return 0;
+}
