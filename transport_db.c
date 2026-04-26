@@ -6,6 +6,7 @@
 
 
 
+//------------------------------------------- Functions ------------------------------------------- //
 void handle_file(int argc, char *argv[]);
 void proccess_files(FILE *input, FILE *output);
 void add_line(char type[], line_id id, int number_of_station, double price);
@@ -17,6 +18,8 @@ void report_direction(char *from_station_name, char *to_station_name);
 void proccess_line(char buffer[], FILE *output);
 transport_type parse_type(const char *type);
 
+
+//------------------------------------------- Structs ------------------------------------------- //
 
 typedef struct line_t {
     int exists;
@@ -30,6 +33,10 @@ typedef struct line_t {
 
 
 Line *lines[MAX_LINES];
+
+
+
+//------------------------------------------- Main ------------------------------------------- //
 
 int main(int argc, char* argv[]) {
 
@@ -146,7 +153,6 @@ void proccess_line(char buffer[], FILE *output) {
 
         if(strcmp(subcmd, "Line") == 0) {
             
-
             char *type = strtok(NULL, " \t\n");
             line_id id = atoi(strtok(NULL, " \t\n"));
             int number_of_station = atoi(strtok(NULL, " \t\n"));
@@ -156,6 +162,8 @@ void proccess_line(char buffer[], FILE *output) {
 
         } else if(strcmp(subcmd, "Station") == 0) {
 
+
+                // add cut of text 
                 line_id id = atoi(strtok(NULL, " \t\n"));
                 char *name = strtok(NULL, " \t\n");
                 add_station_to_line(id, name);
@@ -178,7 +186,9 @@ void proccess_line(char buffer[], FILE *output) {
 
 
         if(strcmp(subcmd, "Lines") == 0) {
+
             printf("Report Lines function\n");
+
         } else if(strcmp(subcmd, "Stations") == 0) {
             printf("Report Stations function\n");
         } else if(strcmp(subcmd, "Directions") == 0) {
@@ -198,6 +208,7 @@ void add_line(char type[], line_id id, int number_of_station, double price) {
       prog2_report_error_message(TRANSPORT_INVALID_LINE_NUMBER);
       return;
     }
+
 
     if(lines[id] != NULL) {
         prog2_report_error_message(TRANSPORT_ALREADY_EXISTS);
@@ -223,6 +234,12 @@ void add_line(char type[], line_id id, int number_of_station, double price) {
         prog2_report_error_message(TRANSPORT_OUT_OF_MEMORY);
         return;
     }
+
+    if(number_of_station <= 0) {
+        prog2_report_error_message(TRANSPORT_INVALID_ARGUMENTS);
+        return;
+    }
+
    
     
     lines[id]->exists = 1;
@@ -240,14 +257,17 @@ void add_line(char type[], line_id id, int number_of_station, double price) {
       return;
     }
 
-
-
-    // all the logic add here ...
-
 }
 
 void remove_line(line_id id) {
-    printf("This is the id to Remove %d\n", id);
+
+
+    if(!(lines[id]->exists)) {
+        prog2_report_error_message(TRANSPORT_DOESNT_EXIST);
+        return;
+    }
+
+    printf("Ready to remove line!\n");
 
     // all the remove logic here
 }
@@ -261,6 +281,10 @@ void add_station_to_line(line_id id, char *station_name) {
 
 
 transport_type parse_type(const char *type) {
+
+if(!type) return 0;
+
+
   if(strcmp(type, "BUS") == 0) return BUS;
   if(strcmp(type, "METRO") == 0) return METRO;
   if(strcmp(type, "TRAIN") == 0) return TRAIN;
