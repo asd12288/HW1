@@ -7,17 +7,16 @@
 
 
 //------------------------------------------- Functions ------------------------------------------- //
-void handle_file(int argc, char *argv[]);
+void run_program(int argc, char *argv[]);
 void proccess_files(FILE *input, FILE *output);
 void add_line(char type[], line_id id, int number_of_station, double price);
 void remove_line(line_id id);
 void add_station_to_line(line_id id, char *station_name);
-void report_lines(char *type);
+void report_db_lines(char *type);
 void report_stations(char *type);
 void report_direction(char *from_station_name, char *to_station_name);
 void proccess_line(char buffer[], FILE *output);
 transport_type parse_type(const char *type);
-
 
 //------------------------------------------- Structs ------------------------------------------- //
 
@@ -32,19 +31,17 @@ typedef struct line_t {
 } Line;
 
 
-Line *lines[MAX_LINES];
-
-
+Line *db_lines[MAX_LINES];
 
 //------------------------------------------- Main ------------------------------------------- //
 
 int main(int argc, char* argv[]) {
 
   for(int i = 0; i < MAX_LINES; i++) {
-    lines[i] = NULL;
+    db_lines[i] = NULL;
   }
 
-    handle_file(argc, argv);
+    run_program(argc, argv);
 
 
     return 0;
@@ -52,7 +49,7 @@ int main(int argc, char* argv[]) {
 
 
 
-void handle_file(int argc, char *argv[]) {
+void run_program(int argc, char *argv[]) {
 
     if(!(argc == 1 || argc == 3 || argc == 5)) {
          prog2_report_error_message(TRANSPORT_INVALID_ARGUMENTS);
@@ -185,9 +182,9 @@ void proccess_line(char buffer[], FILE *output) {
         if(!subcmd) return;
 
 
-        if(strcmp(subcmd, "Lines") == 0) {
+        if(strcmp(subcmd, "db_lines") == 0) {
 
-            printf("Report Lines function\n");
+            printf("Report db_lines function\n");
 
         } else if(strcmp(subcmd, "Stations") == 0) {
             printf("Report Stations function\n");
@@ -210,7 +207,7 @@ void add_line(char type[], line_id id, int number_of_station, double price) {
     }
 
 
-    if(lines[id] != NULL) {
+    if(db_lines[id] != NULL) {
         prog2_report_error_message(TRANSPORT_ALREADY_EXISTS);
         return;
     }
@@ -229,8 +226,10 @@ void add_line(char type[], line_id id, int number_of_station, double price) {
     }
 
 
-    lines[id] = malloc(sizeof(Line));
-    if(!lines[id]) {
+    db_lines[id] = malloc(sizeof(Line));
+
+
+    if(!db_lines[id]) {
         prog2_report_error_message(TRANSPORT_OUT_OF_MEMORY);
         return;
     }
@@ -241,18 +240,17 @@ void add_line(char type[], line_id id, int number_of_station, double price) {
     }
 
    
-    
-    lines[id]->exists = 1;
-    lines[id]->id_of_line = id;
-    lines[id]->type_of_transport = type_line;
-    lines[id]->max_num_of_stations = number_of_station;
-    lines[id]->current_num_of_stations = 0;
-    lines[id]->price = price;
+    db_lines[id]->exists = 1;
+    db_lines[id]->id_of_line = id;
+    db_lines[id]->type_of_transport = type_line;
+    db_lines[id]->max_num_of_stations = number_of_station;
+    db_lines[id]->current_num_of_stations = 0;
+    db_lines[id]->price = price;
 
-    lines[id]->stations = malloc(number_of_station * sizeof(char *));
-    if(!lines[id]->stations) {
-      free(lines[id]);
-      lines[id] = NULL;
+    db_lines[id]->stations = malloc(number_of_station * sizeof(char *));
+    if(!db_lines[id]->stations) {
+      free(db_lines[id]);
+      db_lines[id] = NULL;
       prog2_report_error_message(TRANSPORT_OUT_OF_MEMORY);
       return;
     }
@@ -262,10 +260,13 @@ void add_line(char type[], line_id id, int number_of_station, double price) {
 void remove_line(line_id id) {
 
 
-    if(!(lines[id]->exists)) {
+    if(!(db_lines[id]->exists)) {
         prog2_report_error_message(TRANSPORT_DOESNT_EXIST);
         return;
     }
+
+
+    // remmeber the free the stations connected to the line as well!
 
     printf("Ready to remove line!\n");
 
@@ -288,5 +289,6 @@ if(!type) return 0;
   if(strcmp(type, "BUS") == 0) return BUS;
   if(strcmp(type, "METRO") == 0) return METRO;
   if(strcmp(type, "TRAIN") == 0) return TRAIN;
+
   return 0;
 }

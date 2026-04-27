@@ -1,22 +1,43 @@
 #include <stdio.h>
 
+
+
+
+typedef struct date_t {
+    int day;
+    int month;
+    int year;
+} date;
+
+
+
+typedef struct citizen_t {
+    int id;
+    char *name;
+    char *last_name;
+    date b_day;
+    struct citizen_t *next;
+} citizen;
+
+
+
+citizen *citizen_create(int id, const char *name) {
+    citizen *c = (citizen *) malloc(sizeof(citizen));
+    if(c == NULL) {
+               // ERROR
+            return NULL;
+    }
+    c->id = id;
+    c->name = (citize)
+
+
+    
+}
+
+
 int main() {
     
-    unsigned short X = 65535;  // 0xFFFF
-    unsigned short Y = 1;
-
-    unsigned short R_low;
-    unsigned short R_high = 0;
-
-    unsigned int temp = (unsigned int)X + Y;
-
-    R_low = temp & 0xFFFF;        // lower 16 bits
-    if (temp > 0xFFFF) {
-        R_high = 1;               // carry
-    }
-
-    printf("R_high = %u\n", R_high);
-    printf("R_low  = %u\n", R_low);
+    
 
     return 0;
 }
