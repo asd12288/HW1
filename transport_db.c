@@ -129,8 +129,8 @@ void proccess_files(FILE *input, FILE *output) {
         char buffer[MAX_LEN];
         while(fgets(buffer, sizeof(buffer), input) != NULL) {
 
-        if(buffer[0] == '\n') continue;
-        if(buffer[0] == '#') continue;
+          if(buffer[0] == '\n') continue;
+          if(buffer[0] == '#') continue;
 
         proccess_line(buffer, output);
     
