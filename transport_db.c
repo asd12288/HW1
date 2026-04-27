@@ -293,13 +293,14 @@ void add_station_to_line(line_id id, char *station_name) {
 
     db_lines[id]->stations[db_lines[id]->current_num_of_stations] = (char *)malloc(sizeof(char ) * strlen(station_name) + 1);
 
+    strcpy( db_lines[id]->stations[db_lines[id]->current_num_of_stations], station_name);
+
     if(db_lines[id]->stations[db_lines[id]->current_num_of_stations] == NULL) {
         prog2_report_error_message(TRANSPORT_OUT_OF_MEMORY);
         return;
     }
     db_lines[id]->current_num_of_stations++;
 
-    printf("This is the num of stations %d %s\n", db_lines[id]->current_num_of_stations, db_lines[id]->stations[0]);
 
 }
 
