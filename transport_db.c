@@ -17,7 +17,7 @@ void report_stations(int id, FILE *output);
 void report_direction(char *from_station_name, char *to_station_name, FILE *output);
 void proccess_line(char buffer[], FILE *output);
 transport_type parse_type(const char *type);
-
+void free_memory_allocation(int id);
 //------------------------------------------- Structs ------------------------------------------- //
 
 typedef struct line_t {
@@ -116,7 +116,7 @@ void run_program(int argc, char *argv[]) {
 
      proccess_files(input, output);
 
-     
+
 
      if(input != stdin) fclose(input);
      if(output != stdout) fclose(output);
@@ -131,10 +131,12 @@ void proccess_files(FILE *input, FILE *output) {
 
         if(buffer[0] == '\n') continue;
         if(buffer[0] == '#') continue;
-
         proccess_line(buffer, output);
     
         // get input from file
+    }
+    for(int i = 0; i < MAX_LINES; i++) {
+        free_memory_allocation(i);
     }
 
 }
@@ -238,6 +240,11 @@ void add_line(char *type, line_id id, int number_of_station, double price) {
 
     db_lines[id] = malloc(sizeof(Line));
 
+    if(db_lines[id] == NULL) {
+        free(db_lines[id]);
+        return;
+    }
+
 
     if(!db_lines[id]) {
         prog2_report_error_message(TRANSPORT_OUT_OF_MEMORY);
@@ -259,7 +266,7 @@ void add_line(char *type, line_id id, int number_of_station, double price) {
 
     db_lines[id]->stations = malloc(number_of_station * sizeof(char *));
 
-    if(!db_lines[id]->stations) {
+    if(db_lines[id]->stations == NULL) {
       free(db_lines[id]);
       db_lines[id] = NULL;
       prog2_report_error_message(TRANSPORT_OUT_OF_MEMORY);
@@ -288,13 +295,15 @@ void add_station_to_line(line_id id, char *station_name) {
 
     db_lines[id]->stations[db_lines[id]->current_num_of_stations] = malloc((strlen(station_name) + 1) * sizeof(char));;
 
-    strcpy(db_lines[id]->stations[db_lines[id]->current_num_of_stations], station_name);
 
     if(db_lines[id]->stations[db_lines[id]->current_num_of_stations] == NULL) {
+        free(db_lines[id]->stations[db_lines[id]->current_num_of_stations]);
         prog2_report_error_message(TRANSPORT_OUT_OF_MEMORY);
         return;
     }
 
+
+    strcpy(db_lines[id]->stations[db_lines[id]->current_num_of_stations], station_name);
     db_lines[id]->current_num_of_stations++;
 
 }
@@ -360,8 +369,6 @@ void report_stations(int id, FILE *output) {
 
 
 }
-
-
 void report_direction(char *from, char *to, FILE *output) {
 
     int notFoundFrom = 1;
@@ -388,10 +395,8 @@ void report_direction(char *from, char *to, FILE *output) {
         prog2_report_error_message(TRANSPORT_DOESNT_EXIST);
     }
 }
-
-
-
 transport_type parse_type(const char *type) {
+    
 
 if(!type) return 0;
 
@@ -403,3 +408,17 @@ if(!type) return 0;
   return 0;
 }
 
+void free_memory_allocation(int id) {
+    if(db_lines[id] != NULL) {
+
+        for(int i = 1; i <= db_lines[id]->current_num_of_stations; i++) {
+            free(db_lines[id]->stations[(db_lines[id]->current_num_of_stations) - i]);
+        }
+        
+        free(db_lines[id]->stations);
+        free(db_lines[id]);
+        
+        db_lines[id] = NULL;
+    }
+
+}
