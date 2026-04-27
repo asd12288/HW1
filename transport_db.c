@@ -13,8 +13,8 @@ void add_line(char type[], line_id id, int number_of_station, double price);
 void remove_line(line_id id);
 void add_station_to_line(line_id id, char *station_name);
 void report_db_lines(char *type, FILE *output);
-void report_stations(char *type);
-void report_direction(char *from_station_name, char *to_station_name);
+void report_stations(int id, FILE *output);
+void report_direction(char *from_station_name, char *to_station_name, FILE *output);
 void proccess_line(char buffer[], FILE *output);
 transport_type parse_type(const char *type);
 
@@ -42,7 +42,6 @@ int main(int argc, char* argv[]) {
   }
 
     run_program(argc, argv);
-
 
     return 0;
 }
@@ -117,6 +116,7 @@ void run_program(int argc, char *argv[]) {
 
      proccess_files(input, output);
 
+     
 
      if(input != stdin) fclose(input);
      if(output != stdout) fclose(output);
@@ -136,6 +136,7 @@ void proccess_files(FILE *input, FILE *output) {
     
         // get input from file
     }
+
 }
 
 void proccess_line(char buffer[], FILE *output) {
@@ -154,7 +155,7 @@ void proccess_line(char buffer[], FILE *output) {
     }
     
 
-    // Add 
+//------------------------------------------- Add ------------------------------------------- //
     if(strcmp(cmd, "Add") == 0) {
         char *subcmd = strtok(NULL, " \t\n");
         if(!subcmd) return;
@@ -170,8 +171,6 @@ void proccess_line(char buffer[], FILE *output) {
 
         } else if(strcmp(subcmd, "Station") == 0) {
 
-
-                // add cut of text 
                 line_id id = atoi(strtok(NULL, " \t\n"));
                 char *name = strtok(NULL, " \t\n");
                 add_station_to_line(id, name);
@@ -182,21 +181,23 @@ void proccess_line(char buffer[], FILE *output) {
 
     if(strcmp(cmd, "Report") == 0) {
         char *subcmd = strtok(NULL, " \t\n");
+
         if(!subcmd) return;
 
         if(strcmp(subcmd, "Lines") == 0) {
-
             char *type = strtok(NULL, " \t\n");
             report_db_lines(type, output);
             
 
-        } else if(strcmp(subcmd, "Stations") == 0) {
-           
-
-        } else if(strcmp(subcmd, "Directions") == 0) {
+        } else if(strcmp(subcmd, "Stations") == 0) {          
+            int id = atoi(strtok(NULL, " \t\n"));
+            report_stations(id, output);
             
 
-
+        } else if(strcmp(subcmd, "Directions") == 0) {   
+            char *from = strtok(NULL, " \t\n");
+            char *to = strtok(NULL, " \t\n");
+            report_direction(from, to, output);
         }
 
     } 
@@ -205,7 +206,9 @@ void proccess_line(char buffer[], FILE *output) {
    
 }
 
-void add_line(char type[], line_id id, int number_of_station, double price) {
+// ------------------------------------------- Add ------------------------------------------- //
+
+void add_line(char *type, line_id id, int number_of_station, double price) {
 
 
     if(id >= MAX_LINES || id < 0) {
@@ -283,7 +286,7 @@ void add_station_to_line(line_id id, char *station_name) {
     }
 
 
-    db_lines[id]->stations[db_lines[id]->current_num_of_stations] = (char *)malloc(sizeof(char ) * strlen(station_name) + 1);
+    db_lines[id]->stations[db_lines[id]->current_num_of_stations] = malloc((strlen(station_name) + 1) * sizeof(char));;
 
     strcpy(db_lines[id]->stations[db_lines[id]->current_num_of_stations], station_name);
 
@@ -315,26 +318,75 @@ void remove_line(line_id id) {
 
     db_lines[id] = NULL;
 }
-
 void report_db_lines(char *type, FILE *output) {
 
-
-
-   printf("before \n");
+    
 
    transport_type type_line = parse_type(type);
-
-   printf("starting to print %d\n", type_line);
-   
-    // find all the id of the type 
-    for(int i = 0; i < MAX_LINES; i++) {
-        if(db_lines[i]->type_of_transport == type_line) {
-            prog2_report_line(output, db_lines[i]->id_of_line, type_line, db_lines[i]->current_num_of_stations, db_lines[i]->price);
-        }
+    if(!type_line) {
+        prog2_report_error_message(TRANSPORT_INVALID_LINE_TYPE);
     }
 
+   int transport_empty = 1;
+
    
 
+    // find all the id of the type 
+    for(int i = 0; i < MAX_LINES; i++) {
+        if(db_lines[i] != NULL &&  (db_lines[i]->type_of_transport == type_line || type_line == 7)) {
+            transport_empty = 0;
+            prog2_report_line(output, db_lines[i]->id_of_line, db_lines[i]->type_of_transport , db_lines[i]->current_num_of_stations, db_lines[i]->price);
+        } 
+    }
+    if(transport_empty) {
+        prog2_report_error_message(TRANSPORT_EMPTY);
+    }
+}
+void report_stations(int id, FILE *output) {
+
+     if(db_lines[id] == NULL) {
+        prog2_report_error_message(TRANSPORT_DOESNT_EXIST);
+        return;
+    }
+
+     if(id >= MAX_LINES || id < 0) {
+      prog2_report_error_message(TRANSPORT_INVALID_LINE_NUMBER);
+      return;
+    }
+
+    for(int i = 0; i < db_lines[id]->current_num_of_stations; i++) {
+        prog2_report_station(output, db_lines[id]->stations[i]);
+    }
+
+
+}
+
+
+void report_direction(char *from, char *to, FILE *output) {
+
+    int notFoundFrom = 1;
+    int notFoundTo = 1;
+
+    for(int i = 0; i < MAX_LINES; i++) {
+        if(db_lines[i] != NULL) {
+            for(int j = 0; j < db_lines[i]->current_num_of_stations; j++) {
+                
+                if(notFoundFrom) {
+                    if(strcmp(db_lines[i]->stations[j], from)==0) {
+                        notFoundFrom = 0;
+                    }
+                } else if (strcmp(db_lines[i]->stations[j], to)==0){
+                    fprintf(output, "You can take the line: %d\n",i);
+                    notFoundTo = 0;
+                    break;
+                }
+            } 
+        }
+            
+    }
+    if(notFoundTo) {
+        prog2_report_error_message(TRANSPORT_DOESNT_EXIST);
+    }
 }
 
 
@@ -346,6 +398,8 @@ if(!type) return 0;
   if(strcmp(type, "BUS") == 0) return BUS;
   if(strcmp(type, "METRO") == 0) return METRO;
   if(strcmp(type, "TRAIN") == 0) return TRAIN;
+  if(strcmp(type, "ALL") == 0) return ALL;
 
   return 0;
 }
+

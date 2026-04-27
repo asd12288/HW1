@@ -16,7 +16,7 @@ const char *error_strings[] = {
     "Transport database is empty"
 };
 
-const char *type_strings[] = {"Bus", "Train", "Metro"};
+const char *type_strings[] = {NULL,"Bus","Train", NULL, "Metro"};
 
 const char *error_to_string(transport_result error)
 {

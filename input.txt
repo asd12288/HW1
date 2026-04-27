@@ -1,13 +1,11 @@
-Add Line BUS 12 2 123
-Add Station 12 Haifa
-Add Station 12 Jerusalme
-Add Station 12 Tel Aviv
-Remove Line 12
-Add Line BUS 12 6 123
-Add Line BUS 14 2 123
-Add Line BUS 122 2 123
-Add Line BUS 112 2 123
-Remove Line 14
-Remove Line 122
-Remove Line 152
-Report Lines BUS
+Add Line BUS 1 4 5.5
+Add Station 1 Tel
+Add Station 1 Jeruslame
+Add Station 1 Ramatgan
+
+
+
+
+Report Stations 1
+
+Report Directions asdaTel Jeruasdasslame
