@@ -363,7 +363,7 @@ void report_stations(int id, FILE *output) {
       prog2_report_error_message(TRANSPORT_INVALID_LINE_NUMBER);
       return;
     }
-
+    prog2_report_line(output, db_lines[id]->id_of_line, db_lines[id]->type_of_transport , db_lines[id]->current_num_of_stations, db_lines[id]->price);
     for(int i = 0; i < db_lines[id]->current_num_of_stations; i++) {
         prog2_report_station(output, db_lines[id]->stations[i]);
     }
@@ -384,8 +384,13 @@ void report_direction(char *from, char *to, FILE *output) {
                         notFoundFrom = 0;
                     }
                 } else if (strcmp(db_lines[i]->stations[j], to)==0){
-                    fprintf(output, "You can take the line: %d\n",i);
+                    //start
+                    prog2_report_line(output, db_lines[i]->id_of_line, db_lines[i]->type_of_transport , db_lines[i]->current_num_of_stations, db_lines[i]->price);
+                    prog2_report_station(output,from);
+                    prog2_report_station(output,to);
+                    //changes
                     notFoundTo = 0;
+                    
                     break;
                 }
             } 
