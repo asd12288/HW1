@@ -172,7 +172,8 @@ void proccess_line(char buffer[], FILE *output) {
 
 
         } else if(strcmp(subcmd, "Station") == 0) {
-
+                strtok(NULL, " \t\n");
+                strtok(NULL, " \t\n");
                 line_id id = atoi(strtok(NULL, " \t\n"));
                 char *name = strtok(NULL, " \t\n");
                 add_station_to_line(id, name);
