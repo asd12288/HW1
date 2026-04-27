@@ -1,0 +1,4 @@
+Add Line BUS 12 2 123
+Add Station 12 Haifa
+Add Station 12 Jerusalme
+Add Station 12 Tel Aviv

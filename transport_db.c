@@ -128,11 +128,9 @@ void proccess_files(FILE *input, FILE *output) {
 
         char buffer[MAX_LEN];
         while(fgets(buffer, sizeof(buffer), input) != NULL) {
-
-        if(buffer[0] == '\n') continue;
-        if(buffer[0] == '#') continue;
-
-        proccess_line(buffer, output);
+            if(buffer[0] == '\n') continue;
+            if(buffer[0] == '#') continue;
+            proccess_line(buffer, output);
     
         // get input from file
     }
@@ -248,6 +246,7 @@ void add_line(char type[], line_id id, int number_of_station, double price) {
     db_lines[id]->price = price;
 
     db_lines[id]->stations = malloc(number_of_station * sizeof(char *));
+
     if(!db_lines[id]->stations) {
       free(db_lines[id]);
       db_lines[id] = NULL;
@@ -274,9 +273,34 @@ void remove_line(line_id id) {
 }
 
 void add_station_to_line(line_id id, char *station_name) {
-    printf("This is the station to add %s to this line %d \n", station_name, id);
 
-    // all the add station to a line here
+
+    if(db_lines[id] == NULL) {
+        prog2_report_error_message(TRANSPORT_DOESNT_EXIST);
+        return;
+    }
+
+     if(id >= MAX_LINES || id < 0) {
+      prog2_report_error_message(TRANSPORT_INVALID_LINE_NUMBER);
+      return;
+    }
+
+    if(db_lines[id]->current_num_of_stations + 1  > db_lines[id]->max_num_of_stations) {
+        prog2_report_error_message(TRANSPORT_STATION_OVERFLOW);
+        return;
+    }
+
+
+    db_lines[id]->stations[db_lines[id]->current_num_of_stations] = (char *)malloc(sizeof(char ) * strlen(station_name) + 1);
+
+    if(db_lines[id]->stations[db_lines[id]->current_num_of_stations] == NULL) {
+        prog2_report_error_message(TRANSPORT_OUT_OF_MEMORY);
+        return;
+    }
+    db_lines[id]->current_num_of_stations++;
+
+    printf("This is the num of stations %d %s\n", db_lines[id]->current_num_of_stations, db_lines[id]->stations[0]);
+
 }
 
 
@@ -284,7 +308,6 @@ void add_station_to_line(line_id id, char *station_name) {
 transport_type parse_type(const char *type) {
 
 if(!type) return 0;
-
 
   if(strcmp(type, "BUS") == 0) return BUS;
   if(strcmp(type, "METRO") == 0) return METRO;
