@@ -310,7 +310,7 @@ Add Station To Line 49 TrainN
 Add Station To Line 49 TrainO
 
 # --- SECTION 3: REPORTING OVERVIEWS ---
-Report Lines ALL
+Report Lines
 Report Lines BUS
 Report Lines METRO
 Report Lines TRAIN
