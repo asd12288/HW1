@@ -270,24 +270,6 @@ void add_line(char *type, line_id id, int number_of_station, double price) {
     //
     db_lines[id]->stations = NULL;
 
-
-
-    //db_lines[id]->stations = malloc(number_of_station * sizeof(char *));
-    
-    
-    //try:
-    
-
-
-
-    
-    // if(db_lines[id]->stations == NULL) {
-    //   free(db_lines[id]);
-    //   db_lines[id] = NULL;
-    //   prog2_report_error_message(TRANSPORT_OUT_OF_MEMORY);
-    //   return;
-    // }
-
 }
 void add_station_to_line(line_id id, char *station_name) {
 
@@ -306,11 +288,7 @@ void add_station_to_line(line_id id, char *station_name) {
         prog2_report_error_message(TRANSPORT_STATION_OVERFLOW);
         return;
     }
-    //new:
-    //
-    //
-    //
-    //
+    
     char **temp = (char **)realloc(db_lines[id]->stations,(db_lines[id]->current_num_of_stations + 1) * sizeof(char *));
     
     if(temp == NULL) {
@@ -320,7 +298,6 @@ void add_station_to_line(line_id id, char *station_name) {
     }
     db_lines[id]->stations = temp;
     db_lines[id]->stations[db_lines[id]->current_num_of_stations] = malloc((strlen(station_name) + 1) * sizeof(char));
-    //new end
 
     if(db_lines[id]->stations[db_lines[id]->current_num_of_stations] == NULL) {
         free(db_lines[id]->stations[db_lines[id]->current_num_of_stations]);
