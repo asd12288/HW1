@@ -18,6 +18,8 @@ void report_direction(char *from_station_name, char *to_station_name, FILE *outp
 void proccess_line(char buffer[], FILE *output);
 transport_type parse_type(const char *type);
 void free_memory_allocation(int id);
+void check_invalid_line(int id);
+void check_if_transport_exist(int id);
 //------------------------------------------- Structs ------------------------------------------- //
 
 typedef struct line_t {
@@ -40,9 +42,7 @@ int main(int argc, char* argv[]) {
   for(int i = 0; i < MAX_LINES; i++) {
     db_lines[i] = NULL;
   }
-
     run_program(argc, argv);
-
     return 0;
 }
 
@@ -53,6 +53,7 @@ void run_program(int argc, char *argv[]) {
     if(!(argc == 1 || argc == 3 || argc == 5)) {
          prog2_report_error_message(TRANSPORT_INVALID_ARGUMENTS);
     }
+
    
     FILE *input = stdin;
     FILE *output = stdout;
@@ -116,8 +117,6 @@ void run_program(int argc, char *argv[]) {
 
      proccess_files(input, output);
 
-
-
      if(input != stdin) fclose(input);
      if(output != stdout) fclose(output);
 
@@ -128,13 +127,11 @@ void proccess_files(FILE *input, FILE *output) {
 
     char buffer[MAX_LEN];
     while(fgets(buffer, sizeof(buffer), input) != NULL) {
-
         if(buffer[0] == '\n') continue;
         if(buffer[0] == '#') continue;
         proccess_line(buffer, output);
-    
-        // get input from file
     }
+    
     for(int i = 0; i < MAX_LINES; i++) {
         free_memory_allocation(i);
     }
@@ -146,13 +143,9 @@ void proccess_line(char buffer[], FILE *output) {
     char *cmd = strtok(buffer, " \t\n");
     if(!cmd) return;
 
-
-
      if(strcmp(cmd, "Remove") == 0) {
          strtok(NULL, " \t\n");
-         
          line_id id = atoi(strtok(NULL, " \t\n"));
-         
         remove_line(id);
     }
     
@@ -207,22 +200,12 @@ void proccess_line(char buffer[], FILE *output) {
         }
 
     } 
-
-
-   
 }
 
 // ------------------------------------------- Add ------------------------------------------- //
 
 void add_line(char *type, line_id id, int number_of_station, double price) {
-
-
-    if(id >= MAX_LINES || id < 0) {
-      prog2_report_error_message(TRANSPORT_INVALID_LINE_NUMBER);
-      return;
-    }
-
-
+    check_invalid_line(id);
     if(db_lines[id] != NULL) {
         prog2_report_error_message(TRANSPORT_ALREADY_EXISTS);
         return;
@@ -235,12 +218,10 @@ void add_line(char *type, line_id id, int number_of_station, double price) {
       return;
     }
  
-
     if(price <= 0) {
       prog2_report_error_message(TRANSPORT_INVALID_PRICE);
       return;
     }
-
 
     db_lines[id] = malloc(sizeof(Line));
 
@@ -274,15 +255,11 @@ void add_line(char *type, line_id id, int number_of_station, double price) {
 void add_station_to_line(line_id id, char *station_name) {
 
 
-    if(db_lines[id] == NULL) {
-        prog2_report_error_message(TRANSPORT_DOESNT_EXIST);
-        return;
-    }
 
-     if(id >= MAX_LINES || id < 0) {
-      prog2_report_error_message(TRANSPORT_INVALID_LINE_NUMBER);
-      return;
-    }
+   check_if_transport_exist(id);
+
+    check_invalid_line(id);
+
 
     if(db_lines[id]->current_num_of_stations + 1  > db_lines[id]->max_num_of_stations) {
         prog2_report_error_message(TRANSPORT_STATION_OVERFLOW);
@@ -311,16 +288,12 @@ void add_station_to_line(line_id id, char *station_name) {
     db_lines[id]->current_num_of_stations++;
 
 }
-void remove_line(line_id id) {    
-     if(db_lines[id] == NULL) {
-        prog2_report_error_message(TRANSPORT_DOESNT_EXIST);
-        return;
-    }
+void remove_line(line_id id) { 
+    
+  check_if_transport_exist(id);
 
-     if(id >= MAX_LINES || id < 0) {
-      prog2_report_error_message(TRANSPORT_INVALID_LINE_NUMBER);
-      return;
-    }
+     
+    check_invalid_line(id);
 
     for(int i = 1; i <= db_lines[id]->current_num_of_stations; i++) {
        free(db_lines[id]->stations[(db_lines[id]->current_num_of_stations) - i]);
@@ -355,15 +328,11 @@ void report_db_lines(char *type, FILE *output) {
 }
 void report_stations(int id, FILE *output) {
 
-     if(db_lines[id] == NULL) {
-        prog2_report_error_message(TRANSPORT_DOESNT_EXIST);
-        return;
-    }
+    check_if_transport_exist(id);
 
-     if(id >= MAX_LINES || id < 0) {
-      prog2_report_error_message(TRANSPORT_INVALID_LINE_NUMBER);
-      return;
-    }
+
+
+   
     prog2_report_line(output, db_lines[id]->id_of_line, db_lines[id]->type_of_transport , db_lines[id]->current_num_of_stations, db_lines[id]->price);
     for(int i = 0; i < db_lines[id]->current_num_of_stations; i++) {
         prog2_report_station(output, db_lines[id]->stations[i]);
@@ -402,9 +371,9 @@ void report_direction(char *from, char *to, FILE *output) {
         prog2_report_error_message(TRANSPORT_DOESNT_EXIST);
     }
 }
+
 transport_type parse_type(const char *type) {
     
-
 if(!type) return ALL;
 
   if(strcmp(type, "BUS") == 0) return BUS;
@@ -417,15 +386,25 @@ if(!type) return ALL;
 
 void free_memory_allocation(int id) {
     if(db_lines[id] != NULL) {
-
         for(int i = 1; i <= db_lines[id]->current_num_of_stations; i++) {
             free(db_lines[id]->stations[(db_lines[id]->current_num_of_stations) - i]);
-        }
-        
+        }  
         free(db_lines[id]->stations);
-        free(db_lines[id]);
-        
+        free(db_lines[id]);  
         db_lines[id] = NULL;
     }
 
+}
+
+void check_invalid_line(int id) {
+  if(id >= MAX_LINES || id < 0) {
+      prog2_report_error_message(TRANSPORT_INVALID_LINE_NUMBER);
+      return;
+    }
+}
+
+void check_if_transport_exist(int id) {
+    if(db_lines[id] == NULL) {
+        prog2_report_error_message(TRANSPORT_DOESNT_EXIST);
+    } 
 }

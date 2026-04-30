@@ -1,1 +1,1 @@
-  Bus Line        1 [   1 stations] 5.50$
+  Bus Line       12 [   0 stations] 12.00$
