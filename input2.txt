@@ -1,0 +1,148 @@
+# ==========================================
+# ERROR HANDLING AND EDGE CASES TEST
+# ==========================================
+
+# --- SECTION 1: EMPTY SYSTEM ERRORS ---
+# Trigger TRANSPORT_EMPTY
+Report Lines
+Report Lines BUS
+Report Lines METRO
+Report Lines TRAIN
+
+# --- SECTION 2: INVALID LINE CREATION ---
+# Trigger TRANSPORT_INVALID_LINE_TYPE
+Add Line BUSE 1 10 5.5
+Add Line TRAM 2 10 5.5
+Add Line bus 3 10 5.5
+Add Line AIR 11 10 5.5
+Add Line SHIP 12 10 5.5
+Add Line SUB 13 10 5.5
+Add Line TUBE 14 10 5.5
+Add Line LIGHT 15 10 5.5
+
+# Trigger TRANSPORT_INVALID_LINE_NUMBER (Valid is 0 to 999)
+Add Line BUS -1 10 5.5
+Add Line METRO -100 10 5.5
+Add Line METRO 1005 10 5.5
+Add Line TRAIN -5 10 5.5
+Add Line TRAIN 9999 10 5.5
+Add Line TRAIN -1000 10 5.5
+Add Line TRAIN 10000 10 5.5
+Add Line TRAIN 1500 10 5.5
+
+# Trigger TRANSPORT_INVALID_PRICE (Must be > 0)
+Add Line BUS 10 10 0
+Add Line TRAIN 22 10 -500.0
+Add Line TRAIN 23 10 -10.0
+Add Line TRAIN 24 10 -1.1
+
+# --- SECTION 3: DUPLICATION ERRORS ---
+# Add valid lines first
+Add Line BUS 50 10 5.0
+Add Line BUS 51 10 5.0
+Add Line TRAIN 55 10 20.0
+
+# Trigger TRANSPORT_ALREADY_EXISTS (Same ID)
+Add Line BUS 50 15 5.0
+Add Line METRO 50 20 10.0
+Add Line TRAIN 50 5 20.0
+Add Line BUS 51 15 5.0
+Add Line METRO 51 20 10.0
+Add Line TRAIN 51 5 20.0
+Add Line BUS 52 15 5.0
+Add Line METRO 52 20 10.0
+Add Line TRAIN 52 5 20.0
+
+# --- SECTION 4: STATION OVERFLOW ERRORS ---
+# Trigger TRANSPORT_STATION_OVERFLOW
+Add Line BUS 60 2 5.0
+Add Station To Line 60 StationOne
+Add Station To Line 60 StationTwo
+# These should all fail
+Add Station To Line 60 StationThree
+Add Station To Line 60 StationFour
+
+Add Line METRO 61 3 10.0
+Add Station To Line 61 A
+Add Station To Line 61 B
+Add Station To Line 61 C
+# These should all fail
+Add Station To Line 61 D
+Add Station To Line 61 E
+
+# --- SECTION 5: NON-EXISTENT ENTITY ERRORS ---
+# Trigger TRANSPORT_DOESNT_EXIST (Removing ghosts)
+Remove Line 100
+Remove Line 101
+Remove Line 102
+Remove Line 998
+Remove Line 997
+Remove Line 996
+Remove Line 995
+
+# Trigger TRANSPORT_DOESNT_EXIST (Adding stations to ghosts)
+Add Station To Line 200 GhostStationA
+Add Station To Line 201 GhostStationB
+Add Station To Line 202 GhostStationC
+Add Station To Line 203 GhostStationD
+Add Station To Line 204 GhostStationE
+Add Station To Line 205 GhostStationF
+
+# Trigger TRANSPORT_DOESNT_EXIST (Reporting ghost lines)
+Report Stations 300
+Report Stations 301
+Report Stations 302
+Report Stations 308
+Report Stations 309
+
+# --- SECTION 6: ROUTING LOGIC ERRORS ---
+# Setup valid stations for direction testing
+Add Line BUS 70 10 5.0
+Add Station To Line 70 PointA
+Add Station To Line 70 PointB
+Add Station To Line 70 PointC
+Add Station To Line 70 PointD
+
+Add Line METRO 80 10 10.0
+Add Station To Line 80 PointX
+Add Station To Line 80 PointY
+Add Station To Line 80 PointZ
+
+# Trigger TRANSPORT_DOESNT_EXIST (Invalid Order - Destination before Origin)
+# According to the rules, the from_station must appear BEFORE to_station in the array
+Report Directions PointB PointA
+Report Directions PointC PointA
+Report Directions PointC PointB
+Report Directions PointZ PointX
+Report Directions PointZ PointY
+
+# Trigger TRANSPORT_DOESNT_EXIST (Stations across different lines - NO transfers allowed)
+Report Directions PointA PointX
+Report Directions PointB PointY
+Report Directions PointD PointX
+
+# Trigger TRANSPORT_DOESNT_EXIST (One or both stations don't exist at all)
+Report Directions PointA FakeStation
+Report Directions GhostPoint PointZ
+
+# --- SECTION 7: SYSTEM RECOVERY ---
+# Ensuring the system hasn't crashed after errors
+Add Line TRAIN 90 10 50.0
+Add Station To Line 90 FinalA
+Add Station To Line 90 FinalB
+Report Lines
+Report Stations 90
+Report Directions FinalA FinalB
+
+# Removing valid lines at the very end to ensure cleanup works
+Remove Line 50
+Remove Line 51
+Remove Line 52
+Remove Line 53
+Remove Line 54
+Remove Line 55
+Remove Line 60
+Remove Line 61
+Remove Line 70
+Remove Line 80
+Remove Line 90
