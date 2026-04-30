@@ -405,7 +405,7 @@ void report_direction(char *from, char *to, FILE *output) {
 transport_type parse_type(const char *type) {
     
 
-if(!type) return ALL;
+  if(!type) return ALL;
 
   if(strcmp(type, "BUS") == 0) return BUS;
   if(strcmp(type, "METRO") == 0) return METRO;
