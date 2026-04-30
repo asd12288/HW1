@@ -1,6 +1,6 @@
 #include <string.h>
 #include "prog2_ex1.h"
-#include "prog2_ex1.c"
+//#include "prog2_ex1.c"
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -410,7 +410,7 @@ if(!type) return ALL;
   if(strcmp(type, "BUS") == 0) return BUS;
   if(strcmp(type, "METRO") == 0) return METRO;
   if(strcmp(type, "TRAIN") == 0) return TRAIN;
-  if(strcmp(type, "ALL") == 0) return ALL;
+  //if(strcmp(type, "ALL") == 0) return ALL;
 
   return 0;
 }
