@@ -1,0 +1,16 @@
+  Bus Line       10 [   0 stations] 0.00$
+  Bus Line       50 [   0 stations] 5.00$
+  Bus Line       51 [   0 stations] 5.00$
+  Bus Line       52 [   0 stations] 5.00$
+Train Line       55 [   0 stations] 20.00$
+  Bus Line       60 [   2 stations] 5.00$
+Metro Line       61 [   3 stations] 10.00$
+  Bus Line       70 [   4 stations] 5.00$
+Metro Line       80 [   3 stations] 10.00$
+Train Line       90 [   2 stations] 50.00$
+Train Line       90 [   2 stations] 50.00$
+	Station: FinalA
+	Station: FinalB
+Train Line       90 [   2 stations] 50.00$
+	Station: FinalA
+	Station: FinalB

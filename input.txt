@@ -1,2 +1,6 @@
-Add Line BUS 12 12 12 
-Report Lines
+Add Station To Line 200 GhostStationA
+Add Station To Line 201 GhostStationB
+Add Station To Line 202 GhostStationC
+Add Station To Line 203 GhostStationD
+Add Station To Line 204 GhostStationE
+Add Station To Line 205 GhostStationF
