@@ -1,0 +1,635 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>CalcuLux™ — Premium Computation as a Service</title>
+<meta name="description" content="CalcuLux is the world's first enterprise-grade, AI-powered, cloud-native arithmetic platform. Unlock your answers today." />
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🧮</text></svg>" />
+<style>
+  :root {
+    --bg: #0a0e1a;
+    --panel: #121829;
+    --panel-2: #1a2238;
+    --accent: #6c5ce7;
+    --accent-2: #00d2a8;
+    --gold: #f7b733;
+    --text: #e8ecf5;
+    --muted: #8b95ad;
+    --danger: #ff5c7a;
+    --shadow: 0 20px 60px rgba(0,0,0,.45);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background: radial-gradient(1200px 600px at 80% -10%, #1b1f3a 0%, transparent 60%),
+                radial-gradient(900px 500px at -10% 110%, #0e2a2a 0%, transparent 55%),
+                var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    line-height: 1.5;
+  }
+
+  /* ---------- Top nav ---------- */
+  nav {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 18px 28px; max-width: 1180px; margin: 0 auto;
+  }
+  .brand { display: flex; align-items: center; gap: 10px; font-weight: 800; font-size: 20px; letter-spacing: -.5px; }
+  .brand .logo { font-size: 26px; }
+  .brand span.tm { color: var(--accent-2); }
+  .nav-links { display: flex; gap: 26px; align-items: center; }
+  .nav-links a { color: var(--muted); text-decoration: none; font-size: 14px; font-weight: 600; }
+  .nav-links a:hover { color: var(--text); }
+  .nav-cta {
+    background: linear-gradient(135deg, var(--accent), var(--accent-2));
+    color: #fff; padding: 9px 18px; border-radius: 10px; font-weight: 700; font-size: 14px;
+  }
+
+  /* ---------- Hero ---------- */
+  header.hero { text-align: center; padding: 40px 20px 10px; max-width: 820px; margin: 0 auto; }
+  .badge {
+    display: inline-block; background: rgba(108,92,231,.15); color: #b9aefc;
+    border: 1px solid rgba(108,92,231,.4); padding: 6px 14px; border-radius: 999px;
+    font-size: 12px; font-weight: 700; letter-spacing: .4px; text-transform: uppercase; margin-bottom: 18px;
+  }
+  .hero h1 { font-size: clamp(30px, 5vw, 52px); line-height: 1.08; letter-spacing: -1.5px; font-weight: 850; }
+  .hero h1 .grad {
+    background: linear-gradient(135deg, var(--accent-2), var(--gold));
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+  }
+  .hero p.sub { color: var(--muted); font-size: 18px; margin-top: 16px; }
+  .trust { display: flex; gap: 22px; justify-content: center; flex-wrap: wrap; margin-top: 22px; color: var(--muted); font-size: 13px; }
+  .trust b { color: var(--text); }
+
+  /* ---------- Calculator ---------- */
+  .calc-wrap { display: flex; justify-content: center; padding: 36px 16px 10px; }
+  .calc {
+    width: 340px; background: var(--panel); border: 1px solid rgba(255,255,255,.06);
+    border-radius: 22px; box-shadow: var(--shadow); padding: 18px; position: relative;
+  }
+  .calc .live {
+    position: absolute; top: 16px; right: 16px; font-size: 11px; color: var(--accent-2);
+    display: flex; align-items: center; gap: 6px; font-weight: 700;
+  }
+  .calc .live .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--accent-2); box-shadow: 0 0 0 0 rgba(0,210,168,.6); animation: pulse 1.6s infinite; }
+  @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(0,210,168,.5);} 70% { box-shadow: 0 0 0 9px rgba(0,210,168,0);} 100% { box-shadow: 0 0 0 0 rgba(0,210,168,0);} }
+  .calc .tier-tag { font-size: 11px; color: var(--muted); margin-bottom: 6px; font-weight: 600; }
+  .display {
+    background: var(--panel-2); border-radius: 14px; padding: 18px 18px; text-align: right;
+    margin-bottom: 14px; min-height: 92px; display: flex; flex-direction: column; justify-content: flex-end;
+  }
+  .display .expr { color: var(--muted); font-size: 15px; min-height: 20px; word-break: break-all; }
+  .display .result { font-size: 38px; font-weight: 700; letter-spacing: -1px; word-break: break-all; }
+  .keys { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+  button.key {
+    border: none; border-radius: 14px; padding: 18px 0; font-size: 20px; font-weight: 600;
+    background: var(--panel-2); color: var(--text); cursor: pointer; transition: transform .05s, filter .15s;
+    font-family: inherit;
+  }
+  button.key:hover { filter: brightness(1.25); }
+  button.key:active { transform: scale(.95); }
+  button.key.op { background: #26304d; color: #c9b8ff; }
+  button.key.fn { background: #20283f; color: var(--muted); }
+  button.key.equals {
+    background: linear-gradient(135deg, var(--accent), var(--accent-2)); color: #fff; grid-column: span 1;
+  }
+  button.key.zero { grid-column: span 2; }
+  .calc .footnote { margin-top: 12px; font-size: 11px; color: var(--muted); text-align: center; }
+
+  /* ---------- Pricing ---------- */
+  section.pricing { max-width: 1100px; margin: 40px auto 30px; padding: 30px 20px; }
+  .pricing h2 { text-align: center; font-size: 32px; letter-spacing: -1px; }
+  .pricing .ph-sub { text-align: center; color: var(--muted); margin-top: 8px; margin-bottom: 34px; }
+  .plans { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 20px; }
+  .plan {
+    background: var(--panel); border: 1px solid rgba(255,255,255,.07); border-radius: 18px; padding: 26px 22px;
+    display: flex; flex-direction: column; position: relative;
+  }
+  .plan.popular { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent), var(--shadow); }
+  .plan .pop-badge {
+    position: absolute; top: -12px; left: 50%; transform: translateX(-50%);
+    background: linear-gradient(135deg, var(--accent), var(--accent-2)); color: #fff;
+    font-size: 11px; font-weight: 800; padding: 5px 14px; border-radius: 999px; letter-spacing: .5px;
+  }
+  .plan .pname { font-size: 14px; font-weight: 700; color: var(--accent-2); text-transform: uppercase; letter-spacing: .6px; }
+  .plan .price { font-size: 40px; font-weight: 850; margin: 12px 0 2px; letter-spacing: -1.5px; }
+  .plan .price small { font-size: 15px; color: var(--muted); font-weight: 500; }
+  .plan .ptag { color: var(--muted); font-size: 13px; min-height: 36px; }
+  .plan ul { list-style: none; margin: 18px 0; display: flex; flex-direction: column; gap: 10px; }
+  .plan li { font-size: 14px; color: var(--text); display: flex; gap: 9px; align-items: flex-start; }
+  .plan li .ic { color: var(--accent-2); font-weight: 800; }
+  .plan li.muted { color: var(--muted); }
+  .plan button {
+    margin-top: auto; border: none; border-radius: 11px; padding: 13px; font-size: 15px; font-weight: 700;
+    cursor: pointer; font-family: inherit; background: var(--panel-2); color: var(--text);
+  }
+  .plan.popular button { background: linear-gradient(135deg, var(--accent), var(--accent-2)); color: #fff; }
+  .plan button:hover { filter: brightness(1.15); }
+
+  /* ---------- Logos / social proof ---------- */
+  .logos { text-align: center; padding: 10px 20px 30px; color: var(--muted); }
+  .logos .label { font-size: 12px; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 14px; }
+  .logos .row { display: flex; gap: 30px; justify-content: center; flex-wrap: wrap; font-weight: 800; font-size: 17px; opacity: .55; }
+
+  /* ---------- Footer ---------- */
+  footer { border-top: 1px solid rgba(255,255,255,.06); margin-top: 30px; padding: 26px 20px; text-align: center; color: var(--muted); font-size: 13px; }
+  footer .fineprint { max-width: 760px; margin: 12px auto 0; font-size: 11px; opacity: .7; }
+
+  /* ---------- Modal ---------- */
+  .overlay {
+    position: fixed; inset: 0; background: rgba(5,8,16,.78); backdrop-filter: blur(6px);
+    display: none; align-items: center; justify-content: center; padding: 20px; z-index: 50;
+  }
+  .overlay.show { display: flex; animation: fade .2s ease; }
+  @keyframes fade { from { opacity: 0; } to { opacity: 1; } }
+  .modal {
+    width: min(560px, 100%); background: var(--panel); border: 1px solid rgba(255,255,255,.08);
+    border-radius: 20px; box-shadow: var(--shadow); padding: 30px; position: relative;
+    animation: pop .25s cubic-bezier(.2,.9,.3,1.4);
+  }
+  @keyframes pop { from { transform: scale(.92) translateY(10px); opacity: 0; } to { transform: none; opacity: 1; } }
+  .modal .close { position: absolute; top: 16px; right: 18px; background: none; border: none; color: var(--muted); font-size: 24px; cursor: pointer; }
+  .modal .lock { font-size: 40px; }
+  .modal h3 { font-size: 24px; margin-top: 10px; letter-spacing: -.5px; }
+  .modal .blurb { color: var(--muted); margin-top: 8px; font-size: 15px; }
+  .answer-preview {
+    margin: 20px 0; background: var(--panel-2); border-radius: 14px; padding: 18px; text-align: center; position: relative; overflow: hidden;
+  }
+  .answer-preview .label { font-size: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: .6px; }
+  .answer-preview .blurred {
+    font-size: 44px; font-weight: 800; filter: blur(11px); user-select: none; margin-top: 6px; color: var(--accent-2);
+  }
+  .answer-preview .lockrow { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; gap: 8px; color: var(--text); font-weight: 700; font-size: 14px; }
+  .modal-plans { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin: 18px 0 6px; }
+  .mp {
+    background: var(--panel-2); border: 1px solid rgba(255,255,255,.07); border-radius: 12px; padding: 14px 10px;
+    text-align: center; cursor: pointer; transition: .15s;
+  }
+  .mp:hover { border-color: var(--accent); transform: translateY(-2px); }
+  .mp.best { border-color: var(--accent-2); }
+  .mp .mp-name { font-size: 12px; color: var(--muted); font-weight: 700; text-transform: uppercase; }
+  .mp .mp-price { font-size: 22px; font-weight: 800; margin: 4px 0; }
+  .mp .mp-per { font-size: 11px; color: var(--muted); }
+  .modal .pay-btn {
+    width: 100%; margin-top: 14px; border: none; border-radius: 12px; padding: 15px;
+    background: linear-gradient(135deg, var(--accent), var(--accent-2)); color: #fff; font-size: 16px;
+    font-weight: 800; cursor: pointer; font-family: inherit;
+  }
+  .modal .pay-btn:hover { filter: brightness(1.1); }
+  .modal .reassure { display: flex; gap: 16px; justify-content: center; flex-wrap: wrap; margin-top: 14px; color: var(--muted); font-size: 12px; }
+  .modal .tiny { text-align: center; color: var(--muted); font-size: 11px; margin-top: 14px; line-height: 1.6; }
+  .modal .tiny a { color: var(--accent-2); cursor: pointer; }
+
+  /* processing + reveal states */
+  .processing { text-align: center; padding: 20px 0; }
+  .spinner {
+    width: 46px; height: 46px; border: 4px solid var(--panel-2); border-top-color: var(--accent-2);
+    border-radius: 50%; margin: 0 auto 18px; animation: spin 1s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .processing .pstep { color: var(--muted); font-size: 14px; min-height: 22px; }
+
+  @media (max-width: 560px) {
+    .nav-links a:not(.nav-cta) { display: none; }
+    .modal-plans { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="brand"><span class="logo">🧮</span> CalcuLux<span class="tm">™</span></div>
+  <div class="nav-links">
+    <a href="#pricing">Pricing</a>
+    <a href="#" onclick="return false;">Enterprise</a>
+    <a href="#" onclick="return false;">Docs</a>
+    <a class="nav-cta" href="#pricing">Start Free Trial</a>
+  </div>
+</nav>
+
+<header class="hero">
+  <span class="badge">⚡ Now with AI-accelerated addition</span>
+  <h1>Arithmetic, finally <span class="grad">enterprise-ready.</span></h1>
+  <p class="sub">CalcuLux is the world's first cloud-native, blockchain-secured, AI-powered computation platform. Stop guessing your numbers. Start <em>subscribing</em> to them.</p>
+  <div class="trust">
+    <span>⭐ <b>4.9/5</b> on TrustReviews</span>
+    <span>🔒 <b>SOC-9000</b> compliant</span>
+    <span>🌍 <b>0</b> data breaches*</span>
+    <span>🚀 <b>99.99%</b> uptime</span>
+  </div>
+</header>
+
+<div class="calc-wrap">
+  <div class="calc">
+    <div class="live"><span class="dot"></span> LIVE</div>
+    <div class="tier-tag">Current plan: <strong style="color:var(--text)">Freemium (input only)</strong></div>
+    <div class="display">
+      <div class="expr" id="expr">&nbsp;</div>
+      <div class="result" id="result">0</div>
+    </div>
+    <div class="keys" id="keys">
+      <button class="key fn" data-action="clear">AC</button>
+      <button class="key fn" data-action="sign">±</button>
+      <button class="key fn" data-action="percent">%</button>
+      <button class="key op" data-op="/">÷</button>
+
+      <button class="key" data-num="7">7</button>
+      <button class="key" data-num="8">8</button>
+      <button class="key" data-num="9">9</button>
+      <button class="key op" data-op="*">×</button>
+
+      <button class="key" data-num="4">4</button>
+      <button class="key" data-num="5">5</button>
+      <button class="key" data-num="6">6</button>
+      <button class="key op" data-op="-">−</button>
+
+      <button class="key" data-num="1">1</button>
+      <button class="key" data-num="2">2</button>
+      <button class="key" data-num="3">3</button>
+      <button class="key op" data-op="+">+</button>
+
+      <button class="key zero" data-num="0">0</button>
+      <button class="key" data-num=".">.</button>
+      <button class="key equals" data-action="equals">=</button>
+    </div>
+    <div class="footnote">🔒 Results are computed instantly. Viewing them requires an active subscription.</div>
+  </div>
+</div>
+
+<div class="logos">
+  <div class="label">Trusted by definitely-real teams at</div>
+  <div class="row">
+    <span>Bankrupt&nbsp;Co</span>
+    <span>NumberCorp</span>
+    <span>Sigma&nbsp;Ventures</span>
+    <span>TaxEvade.io</span>
+    <span>QuarterlyLoss</span>
+  </div>
+</div>
+
+<section class="pricing" id="pricing">
+  <h2>Simple, transparent* pricing</h2>
+  <p class="ph-sub">*Transparency available on the Enterprise plan. Cancel anytime (terms apply, anytime ≠ now).</p>
+  <div class="plans">
+    <div class="plan">
+      <div class="pname">Hobby</div>
+      <div class="price">$9<small>/mo</small></div>
+      <div class="ptag">For casual mathematicians who only need small numbers.</div>
+      <ul>
+        <li><span class="ic">✓</span> View results up to <b>2 digits</b></li>
+        <li><span class="ic">✓</span> Addition &amp; subtraction</li>
+        <li class="muted"><span class="ic">✗</span> Multiplication (premium operator)</li>
+        <li class="muted"><span class="ic">✗</span> The number 7</li>
+      </ul>
+      <button onclick="openModal()">Choose Hobby</button>
+    </div>
+
+    <div class="plan popular">
+      <div class="pop-badge">MOST POPULAR</div>
+      <div class="pname">Pro</div>
+      <div class="price">$49<small>/mo</small></div>
+      <div class="ptag">For professionals who need answers and respect.</div>
+      <ul>
+        <li><span class="ic">✓</span> View <b>full-length</b> results</li>
+        <li><span class="ic">✓</span> All four operators unlocked</li>
+        <li><span class="ic">✓</span> Decimal points (up to 3)</li>
+        <li><span class="ic">✓</span> Priority answer queue</li>
+      </ul>
+      <button onclick="openModal()">Go Pro</button>
+    </div>
+
+    <div class="plan">
+      <div class="pname">Enterprise</div>
+      <div class="price">$1,499<small>/mo</small></div>
+      <div class="ptag">For organizations that compute at scale.</div>
+      <ul>
+        <li><span class="ic">✓</span> Everything in Pro</li>
+        <li><span class="ic">✓</span> <b>Negative numbers</b> SLA</li>
+        <li><span class="ic">✓</span> Dedicated abacus engineer</li>
+        <li><span class="ic">✓</span> The number 7 (finally)</li>
+      </ul>
+      <button onclick="openModal()">Contact Sales</button>
+    </div>
+
+    <div class="plan">
+      <div class="pname">Per-Answer</div>
+      <div class="price">$0.99<small>/answer</small></div>
+      <div class="ptag">Commitment-phobic? Pay as you compute.</div>
+      <ul>
+        <li><span class="ic">✓</span> One (1) result per purchase</li>
+        <li><span class="ic">✓</span> No long-term obligation</li>
+        <li><span class="ic">✓</span> Surge pricing during exams</li>
+        <li class="muted"><span class="ic">✗</span> Refunds for wrong answers</li>
+      </ul>
+      <button onclick="openModal()">Buy a result</button>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div>© <span id="year"></span> CalcuLux™ Global Holdings, Inc. — A Subsidiary of Big Calc.</div>
+  <div class="fineprint">
+    *No data breaches recorded because we have not yet figured out how to store data. CalcuLux does not guarantee the
+    accuracy, finiteness, or emotional well-being of any number. By using the equals button you agree to our
+    47-page Terms of Computation. The number 7 is a registered trademark. This is a parody — your math is safe and free.
+  </div>
+</footer>
+
+<!-- ---------- Paywall Modal ---------- -->
+<div class="overlay" id="overlay">
+  <div class="modal" id="modal">
+    <button class="close" onclick="closeModal()">&times;</button>
+
+    <!-- Step 1: paywall -->
+    <div id="step-pay">
+      <div class="lock">🔒</div>
+      <h3>Your answer is ready!</h3>
+      <p class="blurb">We've successfully computed <strong id="modal-expr" style="color:var(--text)"></strong>. Unlock the result to continue.</p>
+
+      <div class="answer-preview">
+        <div class="label">Your Result</div>
+        <div class="blurred" id="blurred-answer">42</div>
+        <div class="lockrow">🔒 Subscription required</div>
+      </div>
+
+      <div class="modal-plans">
+        <div class="mp" onclick="selectPlan(this,'Per-Answer')">
+          <div class="mp-name">Single</div>
+          <div class="mp-price">$0.99</div>
+          <div class="mp-per">this answer</div>
+        </div>
+        <div class="mp best" onclick="selectPlan(this,'Pro')">
+          <div class="mp-name">Pro ⭐</div>
+          <div class="mp-price">$49</div>
+          <div class="mp-per">per month</div>
+        </div>
+        <div class="mp" onclick="selectPlan(this,'Enterprise')">
+          <div class="mp-name">Enterprise</div>
+          <div class="mp-price">$1,499</div>
+          <div class="mp-per">per month</div>
+        </div>
+      </div>
+
+      <button class="pay-btn" id="pay-btn" onclick="startPayment()">Unlock my answer 🔓</button>
+      <div class="reassure">
+        <span>🔒 256-bit encryption</span>
+        <span>💳 No hidden fees**</span>
+        <span>↩️ 30-day guarantee***</span>
+      </div>
+      <div class="tiny">
+        **Fees are visible, just expensive. ***Guarantee is also a subscription.<br>
+        <a onclick="reveal(true)">No thanks, I'll just take the answer for free →</a>
+      </div>
+    </div>
+
+    <!-- Step 2: fake processing -->
+    <div id="step-processing" style="display:none;">
+      <div class="processing">
+        <div class="spinner"></div>
+        <h3>Processing payment…</h3>
+        <div class="pstep" id="pstep">Contacting bank…</div>
+      </div>
+    </div>
+
+    <!-- Step 3: reveal -->
+    <div id="step-reveal" style="display:none; text-align:center;">
+      <div class="lock">🎉</div>
+      <h3 id="reveal-title">Welcome to Pro!</h3>
+      <p class="blurb" id="reveal-sub">Your answer has been unlocked. Thank you for your business.</p>
+      <div class="answer-preview">
+        <div class="label" id="reveal-expr">result</div>
+        <div class="blurred" id="revealed-answer" style="filter:none; color:var(--accent-2);">42</div>
+      </div>
+      <button class="pay-btn" onclick="closeModal()">Done</button>
+      <div class="tiny">You will be billed again in 30 days. And tomorrow. And probably right now.</div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+(function () {
+  "use strict";
+
+  // ---------- Calculator state ----------
+  var exprEl = document.getElementById("expr");
+  var resultEl = document.getElementById("result");
+  var current = "0";      // what's shown
+  var stored = null;      // previous operand
+  var pendingOp = null;   // operator waiting
+  var freshEntry = true;  // next digit replaces display
+  var fullExpression = "";
+
+  var OP_SYMBOL = { "+": "+", "-": "−", "*": "×", "/": "÷" };
+
+  function format(n) {
+    if (!isFinite(n)) return "∞ (Enterprise only)";
+    // limit absurd float tails
+    var s = Math.round(n * 1e10) / 1e10;
+    return String(s);
+  }
+
+  function updateDisplay() {
+    resultEl.textContent = current;
+    exprEl.innerHTML = fullExpression ? fullExpression : "&nbsp;";
+  }
+
+  function inputNum(d) {
+    if (freshEntry) {
+      current = (d === ".") ? "0." : d;
+      freshEntry = false;
+    } else {
+      if (d === "." && current.indexOf(".") !== -1) return;
+      current = (current === "0" && d !== ".") ? d : current + d;
+    }
+    updateDisplay();
+  }
+
+  function compute(a, b, op) {
+    a = parseFloat(a); b = parseFloat(b);
+    switch (op) {
+      case "+": return a + b;
+      case "-": return a - b;
+      case "*": return a * b;
+      case "/": return b === 0 ? Infinity : a / b;
+    }
+    return b;
+  }
+
+  function chooseOp(op) {
+    if (pendingOp && !freshEntry) {
+      var r = compute(stored, current, pendingOp);
+      stored = format(r);
+      current = stored;
+    } else {
+      stored = current;
+    }
+    pendingOp = op;
+    freshEntry = true;
+    fullExpression = stored + " " + OP_SYMBOL[op];
+    updateDisplay();
+  }
+
+  function doEquals() {
+    if (pendingOp === null) {
+      // Even a no-op equals deserves a paywall.
+      fullExpression = current + " =";
+      paywall(current, current);
+      return;
+    }
+    var rhs = current;
+    var r = compute(stored, rhs, pendingOp);
+    var answer = format(r);
+    var pretty = stored + " " + OP_SYMBOL[pendingOp] + " " + rhs + " =";
+    fullExpression = pretty;
+    updateDisplay();
+    // reset engine but DON'T show the answer — paywall it
+    paywall(pretty, answer);
+    stored = answer; current = answer; pendingOp = null; freshEntry = true;
+  }
+
+  function clearAll() {
+    current = "0"; stored = null; pendingOp = null; freshEntry = true; fullExpression = "";
+    updateDisplay();
+  }
+
+  function signFlip() {
+    if (current === "0") return;
+    current = current.charAt(0) === "-" ? current.slice(1) : "-" + current;
+    updateDisplay();
+  }
+
+  function percent() {
+    current = format(parseFloat(current) / 100);
+    freshEntry = false;
+    updateDisplay();
+  }
+
+  // ---------- Wire up keys ----------
+  document.getElementById("keys").addEventListener("click", function (e) {
+    var btn = e.target.closest("button");
+    if (!btn) return;
+    if (btn.dataset.num !== undefined) return inputNum(btn.dataset.num);
+    if (btn.dataset.op !== undefined) return chooseOp(btn.dataset.op);
+    switch (btn.dataset.action) {
+      case "clear": return clearAll();
+      case "sign": return signFlip();
+      case "percent": return percent();
+      case "equals": return doEquals();
+    }
+  });
+
+  // keyboard support
+  document.addEventListener("keydown", function (e) {
+    if (document.getElementById("overlay").classList.contains("show")) {
+      if (e.key === "Escape") closeModal();
+      return;
+    }
+    if (/[0-9.]/.test(e.key)) inputNum(e.key);
+    else if (["+", "-", "*", "/"].indexOf(e.key) !== -1) chooseOp(e.key);
+    else if (e.key === "Enter" || e.key === "=") { e.preventDefault(); doEquals(); }
+    else if (e.key === "Backspace") clearAll();
+    else if (e.key === "Escape") clearAll();
+  });
+
+  // ---------- Paywall / modal ----------
+  var pendingAnswer = "0";
+  var pendingPretty = "";
+  var chosenPlan = "Pro";
+
+  function paywall(pretty, answer) {
+    pendingAnswer = answer;
+    pendingPretty = pretty.replace(/ =$/, "");
+    document.getElementById("modal-expr").textContent = pendingPretty;
+    document.getElementById("blurred-answer").textContent = answer;
+    document.getElementById("revealed-answer").textContent = answer;
+    document.getElementById("reveal-expr").textContent = pendingPretty + " =";
+    // reset modal to step 1
+    showStep("step-pay");
+    document.getElementById("overlay").classList.add("show");
+  }
+
+  function showStep(id) {
+    ["step-pay", "step-processing", "step-reveal"].forEach(function (s) {
+      document.getElementById(s).style.display = (s === id) ? "" : "none";
+    });
+  }
+
+  window.openModal = function () {
+    // generic CTA from pricing section
+    document.getElementById("modal-expr").textContent = "your future calculations";
+    document.getElementById("blurred-answer").textContent = "$$$";
+    showStep("step-pay");
+    document.getElementById("overlay").classList.add("show");
+  };
+
+  window.closeModal = function () {
+    document.getElementById("overlay").classList.remove("show");
+  };
+
+  window.selectPlan = function (el, name) {
+    chosenPlan = name;
+    document.querySelectorAll(".mp").forEach(function (m) { m.classList.remove("best"); });
+    el.classList.add("best");
+    var btn = document.getElementById("pay-btn");
+    if (name === "Per-Answer") btn.textContent = "Pay $0.99 & unlock 🔓";
+    else if (name === "Pro") btn.textContent = "Subscribe for $49/mo 🔓";
+    else btn.textContent = "Request Enterprise quote 🔓";
+  };
+
+  var steps = [
+    "Contacting bank…",
+    "Negotiating with your account…",
+    "Verifying you really need this number…",
+    "Waking up the abacus engineer…",
+    "Applying surge pricing…",
+    "Almost there (this part is free)…"
+  ];
+
+  window.startPayment = function () {
+    showStep("step-processing");
+    var i = 0;
+    var pstep = document.getElementById("pstep");
+    pstep.textContent = steps[0];
+    var t = setInterval(function () {
+      i++;
+      if (i >= steps.length) {
+        clearInterval(t);
+        finishReveal(false);
+      } else {
+        pstep.textContent = steps[i];
+      }
+    }, 650);
+  };
+
+  // reveal(free) -> true if user clicked the "free" escape hatch
+  window.reveal = function (free) {
+    finishReveal(free);
+  };
+
+  function finishReveal(free) {
+    document.getElementById("revealed-answer").textContent = pendingAnswer;
+    if (free) {
+      document.getElementById("reveal-title").textContent = "Fine. It's on the house. 🎁";
+      document.getElementById("reveal-sub").textContent =
+        "You found the free button. Our investors are devastated. Here's your answer:";
+    } else {
+      document.getElementById("reveal-title").textContent = "Payment successful! 🎉";
+      document.getElementById("reveal-sub").textContent =
+        "Thank you for choosing the " + chosenPlan + " plan. Your answer is unlocked:";
+    }
+    showStep("step-reveal");
+  }
+
+  // close on overlay backdrop click
+  document.getElementById("overlay").addEventListener("click", function (e) {
+    if (e.target === this) closeModal();
+  });
+
+  document.getElementById("year").textContent = new Date().getFullYear();
+  updateDisplay();
+})();
+</script>
+</body>
+</html>
