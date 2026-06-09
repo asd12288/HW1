@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>CalcuLux™</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🧮</text></svg>" />
+<style>
+  :root {
+    --bg: #0a0e1a;
+    --panel: #121829;
+    --panel-2: #1a2238;
+    --accent: #6c5ce7;
+    --accent-2: #00d2a8;
+    --gold: #f7b733;
+    --text: #e8ecf5;
+    --muted: #8b95ad;
+    --shadow: 0 20px 60px rgba(0,0,0,.45);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background: radial-gradient(1200px 600px at 80% -10%, #1b1f3a 0%, transparent 60%),
+                radial-gradient(900px 500px at -10% 110%, #0e2a2a 0%, transparent 55%),
+                var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    padding: 30px 16px;
+  }
+
+  /* ---------- Title ---------- */
+  .title { display: flex; align-items: center; gap: 12px; font-weight: 850; font-size: 34px; letter-spacing: -1px; margin-bottom: 26px; }
+  .title .logo { font-size: 38px; }
+  .title .tm { color: var(--accent-2); }
+
+  /* ---------- Calculator ---------- */
+  .calc {
+    width: 340px; max-width: 100%; background: var(--panel); border: 1px solid rgba(255,255,255,.06);
+    border-radius: 22px; box-shadow: var(--shadow); padding: 18px; position: relative;
+  }
+  .calc .live {
+    position: absolute; top: 16px; left: 18px; font-size: 11px; color: var(--accent-2);
+    display: flex; align-items: center; gap: 6px; font-weight: 700;
+  }
+  .calc .live .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--accent-2); animation: pulse 1.6s infinite; }
+  @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(0,210,168,.5);} 70% { box-shadow: 0 0 0 9px rgba(0,210,168,0);} 100% { box-shadow: 0 0 0 0 rgba(0,210,168,0);} }
+  .display {
+    background: var(--panel-2); border-radius: 14px; padding: 22px 18px 18px; text-align: right;
+    margin-bottom: 14px; min-height: 96px; display: flex; flex-direction: column; justify-content: flex-end;
+  }
+  .display .expr { color: var(--muted); font-size: 15px; min-height: 20px; word-break: break-all; }
+  .display .result { font-size: 38px; font-weight: 700; letter-spacing: -1px; word-break: break-all; }
+  .keys { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+  button.key {
+    border: none; border-radius: 14px; padding: 18px 0; font-size: 20px; font-weight: 600;
+    background: var(--panel-2); color: var(--text); cursor: pointer; transition: transform .05s, filter .15s;
+    font-family: inherit;
+  }
+  button.key:hover { filter: brightness(1.25); }
+  button.key:active { transform: scale(.95); }
+  button.key.op { background: #26304d; color: #c9b8ff; }
+  button.key.fn { background: #20283f; color: var(--muted); }
+  button.key.equals { background: linear-gradient(135deg, var(--accent), var(--accent-2)); color: #fff; }
+  button.key.zero { grid-column: span 2; }
+
+  /* ---------- Modal ---------- */
+  .overlay {
+    position: fixed; inset: 0; background: rgba(5,8,16,.8); backdrop-filter: blur(6px);
+    display: none; align-items: center; justify-content: center; padding: 20px; z-index: 50;
+  }
+  .overlay.show { display: flex; animation: fade .2s ease; }
+  @keyframes fade { from { opacity: 0; } to { opacity: 1; } }
+  .modal {
+    width: min(680px, 100%); background: var(--panel); border: 1px solid rgba(255,255,255,.08);
+    border-radius: 22px; box-shadow: var(--shadow); padding: 30px; position: relative;
+    animation: pop .25s cubic-bezier(.2,.9,.3,1.4); text-align: center;
+  }
+  @keyframes pop { from { transform: scale(.92) translateY(10px); opacity: 0; } to { transform: none; opacity: 1; } }
+  .modal .close { position: absolute; top: 14px; right: 18px; background: none; border: none; color: var(--muted); font-size: 26px; cursor: pointer; line-height: 1; }
+  .modal h3 { font-size: 24px; letter-spacing: -.5px; }
+  .modal .blurb { color: var(--muted); margin-top: 6px; font-size: 14px; }
+
+  .answer-preview { margin: 18px auto 24px; background: var(--panel-2); border-radius: 14px; padding: 16px; max-width: 320px; position: relative; overflow: hidden; }
+  .answer-preview .label { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: .6px; }
+  .answer-preview .blurred { font-size: 42px; font-weight: 800; filter: blur(12px); user-select: none; margin-top: 4px; color: var(--accent-2); }
+  .answer-preview .lockrow { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; gap: 8px; color: var(--text); font-weight: 700; font-size: 14px; }
+
+  /* ---------- Big price cards (the focus) ---------- */
+  .cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-top: 6px; }
+  .card {
+    background: var(--panel-2); border: 2px solid rgba(255,255,255,.07); border-radius: 18px;
+    padding: 26px 16px; cursor: pointer; transition: .18s; position: relative; display: flex; flex-direction: column; align-items: center;
+  }
+  .card:hover { transform: translateY(-4px); border-color: var(--accent); }
+  .card.selected { border-color: var(--accent-2); box-shadow: 0 0 0 3px rgba(0,210,168,.25); }
+  .card.popular { border-color: var(--accent); }
+  .card .ribbon {
+    position: absolute; top: -13px; left: 50%; transform: translateX(-50%);
+    background: linear-gradient(135deg, var(--accent), var(--accent-2)); color: #fff;
+    font-size: 10px; font-weight: 800; padding: 5px 12px; border-radius: 999px; letter-spacing: .5px; white-space: nowrap;
+  }
+  .card .pname { font-size: 12px; font-weight: 800; color: var(--accent-2); text-transform: uppercase; letter-spacing: .7px; }
+  .card .price { font-size: 46px; font-weight: 900; letter-spacing: -2px; margin: 10px 0 0; line-height: 1; }
+  .card .price .cur { font-size: 24px; vertical-align: super; font-weight: 800; }
+  .card .per { font-size: 12px; color: var(--muted); margin-top: 6px; }
+  .card.enterprise .price { font-size: 34px; }
+
+  .pay-btn {
+    width: 100%; margin-top: 22px; border: none; border-radius: 13px; padding: 17px;
+    background: linear-gradient(135deg, var(--accent), var(--accent-2)); color: #fff; font-size: 17px;
+    font-weight: 800; cursor: pointer; font-family: inherit;
+  }
+  .pay-btn:hover { filter: brightness(1.1); }
+  .free-link { display: inline-block; margin-top: 14px; color: var(--muted); font-size: 12px; cursor: pointer; }
+  .free-link:hover { color: var(--accent-2); }
+
+  /* processing + reveal */
+  .processing { padding: 26px 0; }
+  .spinner { width: 46px; height: 46px; border: 4px solid var(--panel-2); border-top-color: var(--accent-2); border-radius: 50%; margin: 0 auto 18px; animation: spin 1s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .processing .pstep { color: var(--muted); font-size: 14px; min-height: 22px; }
+  .revealed { font-size: 48px; font-weight: 900; color: var(--accent-2); margin: 14px 0; }
+
+  @media (max-width: 560px) {
+    .cards { grid-template-columns: 1fr; }
+    .card .price { font-size: 40px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="title"><span class="logo">🧮</span> CalcuLux<span class="tm">™</span></div>
+
+<div class="calc">
+  <div class="live"><span class="dot"></span> LIVE</div>
+  <div class="display">
+    <div class="expr" id="expr">&nbsp;</div>
+    <div class="result" id="result">0</div>
+  </div>
+  <div class="keys" id="keys">
+    <button class="key fn" data-action="clear">AC</button>
+    <button class="key fn" data-action="sign">±</button>
+    <button class="key fn" data-action="percent">%</button>
+    <button class="key op" data-op="/">÷</button>
+
+    <button class="key" data-num="7">7</button>
+    <button class="key" data-num="8">8</button>
+    <button class="key" data-num="9">9</button>
+    <button class="key op" data-op="*">×</button>
+
+    <button class="key" data-num="4">4</button>
+    <button class="key" data-num="5">5</button>
+    <button class="key" data-num="6">6</button>
+    <button class="key op" data-op="-">−</button>
+
+    <button class="key" data-num="1">1</button>
+    <button class="key" data-num="2">2</button>
+    <button class="key" data-num="3">3</button>
+    <button class="key op" data-op="+">+</button>
+
+    <button class="key zero" data-num="0">0</button>
+    <button class="key" data-num=".">.</button>
+    <button class="key equals" data-action="equals">=</button>
+  </div>
+</div>
+
+<!-- ---------- Paywall Modal ---------- -->
+<div class="overlay" id="overlay">
+  <div class="modal" id="modal">
+    <button class="close" onclick="closeModal()">&times;</button>
+
+    <!-- Step 1: pricing -->
+    <div id="step-pay">
+      <h3>🔒 Unlock your answer</h3>
+      <p class="blurb">We computed <strong id="modal-expr" style="color:var(--text)"></strong>. Choose a plan to reveal it.</p>
+
+      <div class="answer-preview">
+        <div class="label">Your Result</div>
+        <div class="blurred" id="blurred-answer">42</div>
+        <div class="lockrow">🔒 Locked</div>
+      </div>
+
+      <div class="cards" id="cards">
+        <div class="card" data-plan="Single" data-cta="Pay $0.99 & unlock" onclick="selectCard(this)">
+          <div class="pname">Single</div>
+          <div class="price"><span class="cur">$</span>0.99</div>
+          <div class="per">this one answer</div>
+        </div>
+        <div class="card popular selected" data-plan="Pro" data-cta="Subscribe $49/mo & unlock" onclick="selectCard(this)">
+          <div class="ribbon">MOST POPULAR</div>
+          <div class="pname">Pro</div>
+          <div class="price"><span class="cur">$</span>49</div>
+          <div class="per">per month</div>
+        </div>
+        <div class="card enterprise" data-plan="Enterprise" data-cta="Get Enterprise quote" onclick="selectCard(this)">
+          <div class="pname">Enterprise</div>
+          <div class="price"><span class="cur">$</span>1,499</div>
+          <div class="per">per month</div>
+        </div>
+      </div>
+
+      <button class="pay-btn" id="pay-btn" onclick="startPayment()">Subscribe $49/mo &amp; unlock 🔓</button>
+      <div><span class="free-link" onclick="reveal(true)">No thanks, I'll just take it for free →</span></div>
+    </div>
+
+    <!-- Step 2: fake processing -->
+    <div id="step-processing" style="display:none;">
+      <div class="processing">
+        <div class="spinner"></div>
+        <h3>Processing payment…</h3>
+        <div class="pstep" id="pstep">Contacting bank…</div>
+      </div>
+    </div>
+
+    <!-- Step 3: reveal -->
+    <div id="step-reveal" style="display:none;">
+      <h3 id="reveal-title">🎉 Unlocked!</h3>
+      <div class="revealed" id="revealed-answer">42</div>
+      <button class="pay-btn" onclick="closeModal()">Done</button>
+    </div>
+
+  </div>
+</div>
+
+<script>
+(function () {
+  "use strict";
+
+  var exprEl = document.getElementById("expr");
+  var resultEl = document.getElementById("result");
+  var current = "0", stored = null, pendingOp = null, freshEntry = true, fullExpression = "";
+  var OP_SYMBOL = { "+": "+", "-": "−", "*": "×", "/": "÷" };
+
+  function format(n) {
+    if (!isFinite(n)) return "∞ (Enterprise only)";
+    return String(Math.round(n * 1e10) / 1e10);
+  }
+  function updateDisplay() {
+    resultEl.textContent = current;
+    exprEl.innerHTML = fullExpression ? fullExpression : "&nbsp;";
+  }
+  function inputNum(d) {
+    if (freshEntry) { current = (d === ".") ? "0." : d; freshEntry = false; }
+    else {
+      if (d === "." && current.indexOf(".") !== -1) return;
+      current = (current === "0" && d !== ".") ? d : current + d;
+    }
+    updateDisplay();
+  }
+  function compute(a, b, op) {
+    a = parseFloat(a); b = parseFloat(b);
+    switch (op) { case "+": return a + b; case "-": return a - b; case "*": return a * b; case "/": return b === 0 ? Infinity : a / b; }
+    return b;
+  }
+  function chooseOp(op) {
+    if (pendingOp && !freshEntry) { stored = format(compute(stored, current, pendingOp)); current = stored; }
+    else { stored = current; }
+    pendingOp = op; freshEntry = true; fullExpression = stored + " " + OP_SYMBOL[op]; updateDisplay();
+  }
+  function doEquals() {
+    if (pendingOp === null) { fullExpression = current + " ="; updateDisplay(); paywall(current, current); return; }
+    var rhs = current, answer = format(compute(stored, rhs, pendingOp));
+    var pretty = stored + " " + OP_SYMBOL[pendingOp] + " " + rhs + " =";
+    fullExpression = pretty; updateDisplay();
+    paywall(pretty, answer);
+    stored = answer; current = answer; pendingOp = null; freshEntry = true;
+  }
+  function clearAll() { current = "0"; stored = null; pendingOp = null; freshEntry = true; fullExpression = ""; updateDisplay(); }
+  function signFlip() { if (current === "0") return; current = current.charAt(0) === "-" ? current.slice(1) : "-" + current; updateDisplay(); }
+  function percent() { current = format(parseFloat(current) / 100); freshEntry = false; updateDisplay(); }
+
+  document.getElementById("keys").addEventListener("click", function (e) {
+    var btn = e.target.closest("button"); if (!btn) return;
+    if (btn.dataset.num !== undefined) return inputNum(btn.dataset.num);
+    if (btn.dataset.op !== undefined) return chooseOp(btn.dataset.op);
+    switch (btn.dataset.action) {
+      case "clear": return clearAll();
+      case "sign": return signFlip();
+      case "percent": return percent();
+      case "equals": return doEquals();
+    }
+  });
+  document.addEventListener("keydown", function (e) {
+    if (document.getElementById("overlay").classList.contains("show")) { if (e.key === "Escape") closeModal(); return; }
+    if (/[0-9.]/.test(e.key)) inputNum(e.key);
+    else if (["+", "-", "*", "/"].indexOf(e.key) !== -1) chooseOp(e.key);
+    else if (e.key === "Enter" || e.key === "=") { e.preventDefault(); doEquals(); }
+    else if (e.key === "Backspace" || e.key === "Escape") clearAll();
+  });
+
+  // ---------- Modal ----------
+  var pendingAnswer = "0", chosenPlan = "Pro";
+
+  function paywall(pretty, answer) {
+    pendingAnswer = answer;
+    document.getElementById("modal-expr").textContent = pretty.replace(/ =$/, "");
+    document.getElementById("blurred-answer").textContent = answer;
+    document.getElementById("revealed-answer").textContent = answer;
+    showStep("step-pay");
+    document.getElementById("overlay").classList.add("show");
+  }
+  function showStep(id) {
+    ["step-pay", "step-processing", "step-reveal"].forEach(function (s) {
+      document.getElementById(s).style.display = (s === id) ? "" : "none";
+    });
+  }
+  window.closeModal = function () { document.getElementById("overlay").classList.remove("show"); };
+
+  window.selectCard = function (el) {
+    document.querySelectorAll(".card").forEach(function (c) { c.classList.remove("selected"); });
+    el.classList.add("selected");
+    chosenPlan = el.dataset.plan;
+    document.getElementById("pay-btn").textContent = el.dataset.cta + " 🔓";
+  };
+
+  var steps = [
+    "Contacting bank…",
+    "Verifying you really need this number…",
+    "Waking up the abacus engineer…",
+    "Applying surge pricing…",
+    "Almost there (this part is free)…"
+  ];
+  window.startPayment = function () {
+    showStep("step-processing");
+    var i = 0, pstep = document.getElementById("pstep");
+    pstep.textContent = steps[0];
+    var t = setInterval(function () {
+      i++;
+      if (i >= steps.length) { clearInterval(t); finishReveal(false); }
+      else pstep.textContent = steps[i];
+    }, 650);
+  };
+  window.reveal = function (free) { finishReveal(free); };
+  function finishReveal(free) {
+    document.getElementById("revealed-answer").textContent = pendingAnswer;
+    document.getElementById("reveal-title").textContent = free ? "🎁 Fine, it's on the house." : "🎉 Payment successful!";
+    showStep("step-reveal");
+  }
+
+  document.getElementById("overlay").addEventListener("click", function (e) { if (e.target === this) closeModal(); });
+  updateDisplay();
+})();
+</script>
+</body>
+</html>
